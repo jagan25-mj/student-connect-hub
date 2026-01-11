@@ -19,7 +19,8 @@ export interface IPost extends Document {
     author: mongoose.Types.ObjectId | IUser;
     likes: number;
     likedBy: mongoose.Types.ObjectId[];
-    comments: IComment[];
+    commentCount: number;
+    commentsList: IComment[];
     createdAt: Date;
 }
 
@@ -82,7 +83,14 @@ const postSchema = new Schema<IPost>(
             type: Schema.Types.ObjectId,
             ref: 'User',
         }],
-        comments: [commentSchema],
+        commentCount: {
+            type: Number,
+            default: 0,
+        },
+        commentsList: {
+            type: [commentSchema],
+            default: [],
+        },
     },
     {
         timestamps: true,

@@ -20,7 +20,7 @@ export const getPosts = async (
 
         const posts = await Post.find(query)
             .sort({ createdAt: -1 })
-            .populate('comments.user', 'name avatar');
+            .populate('commentsList.user', 'name avatar');
 
         // Transform posts to match frontend format
         const formattedPosts = posts.map((post) => ({
@@ -31,8 +31,8 @@ export const getPosts = async (
             tags: post.tags,
             author: post.author,
             likes: post.likes,
-            likedBy: post.likedBy,
-            comments: post.comments.length,
+            likedBy: post.likedBy || [],
+            comments: post.commentCount || post.commentsList?.length || 0,
             createdAt: post.createdAt,
         }));
 
@@ -56,7 +56,7 @@ export const getPost = async (
 ): Promise<void> => {
     try {
         const post = await Post.findById(req.params.id)
-            .populate('comments.user', 'name avatar');
+            .populate('commentsList.user', 'name avatar');
 
         if (!post) {
             res.status(404).json({
@@ -76,8 +76,9 @@ export const getPost = async (
                 tags: post.tags,
                 author: post.author,
                 likes: post.likes,
-                likedBy: post.likedBy,
-                comments: post.comments,
+                likedBy: post.likedBy || [],
+                comments: post.commentCount || post.commentsList?.length || 0,
+                commentsList: post.commentsList || [],
                 createdAt: post.createdAt,
             },
         });
@@ -111,6 +112,9 @@ export const createPost = async (
             description,
             tags: tags || [],
             author: req.user._id,
+            likedBy: [],
+            commentsList: [],
+            commentCount: 0,
         });
 
         // Populate author for response
@@ -163,6 +167,11 @@ export const likePost = async (
             return;
         }
 
+        // Initialize likedBy if it doesn't exist
+        if (!post.likedBy) {
+            post.likedBy = [];
+        }
+
         const userId = req.user._id;
         const likedIndex = post.likedBy.findIndex(
             (id) => id.toString() === userId.toString()
@@ -173,12 +182,12 @@ export const likePost = async (
         if (likedIndex > -1) {
             // User already liked - unlike
             post.likedBy.splice(likedIndex, 1);
-            post.likes = Math.max(0, post.likes - 1);
+            post.likes = Math.max(0, (post.likes || 0) - 1);
             liked = false;
         } else {
             // Like the post
             post.likedBy.push(userId);
-            post.likes += 1;
+            post.likes = (post.likes || 0) + 1;
             liked = true;
         }
 
@@ -233,19 +242,27 @@ export const addComment = async (
             return;
         }
 
-        post.comments.push({
+        // Initialize commentsList if it doesn't exist
+        if (!post.commentsList) {
+            post.commentsList = [];
+        }
+
+        const newComment = {
             user: req.user._id,
             text: text.trim(),
-        } as any);
+        };
+
+        post.commentsList.push(newComment as any);
+        post.commentCount = post.commentsList.length;
 
         await post.save();
-        await post.populate('comments.user', 'name avatar');
+        await post.populate('commentsList.user', 'name avatar');
 
-        const newComment = post.comments[post.comments.length - 1];
+        const addedComment = post.commentsList[post.commentsList.length - 1];
 
         res.status(201).json({
             success: true,
-            data: newComment,
+            data: addedComment,
         });
     } catch (error) {
         next(error);
