@@ -5,14 +5,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { toast } from 'sonner';
 import {
-    User,
     Mail,
     Calendar,
     Shield,
     LogOut,
     Settings,
-    Edit
+    Edit,
+    Construction
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -24,6 +25,20 @@ export default function Profile() {
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const handleEditProfile = () => {
+        toast.info('Edit Profile', {
+            description: 'Profile editing feature coming soon!',
+            icon: <Construction className="h-4 w-4" />,
+        });
+    };
+
+    const handleAccountSettings = () => {
+        toast.info('Account Settings', {
+            description: 'Account settings feature coming soon!',
+            icon: <Construction className="h-4 w-4" />,
+        });
     };
 
     if (!user) {
@@ -70,7 +85,13 @@ export default function Profile() {
 
                             {/* Edit Button */}
                             <div className="flex justify-end">
-                                <Button variant="outline" size="sm" className="gap-2" aria-label="Edit profile">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2"
+                                    aria-label="Edit profile"
+                                    onClick={handleEditProfile}
+                                >
                                     <Edit className="h-4 w-4" />
                                     Edit Profile
                                 </Button>
@@ -118,6 +139,7 @@ export default function Profile() {
                                 variant="outline"
                                 className="w-full justify-start gap-3"
                                 aria-label="Account settings"
+                                onClick={handleAccountSettings}
                             >
                                 <Settings className="h-4 w-4" />
                                 Account Settings
