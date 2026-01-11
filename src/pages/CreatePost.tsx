@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
+import { postsApi } from '@/lib/api';
 import { PostType } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,21 +14,21 @@ import { toast } from 'sonner';
 import { Rocket, Trophy, Briefcase, Loader2, ArrowLeft, Plus, X } from 'lucide-react';
 
 const postTypes: { value: PostType; label: string; icon: React.ElementType; description: string }[] = [
-  { 
-    value: 'project', 
-    label: 'Project', 
+  {
+    value: 'project',
+    label: 'Project',
     icon: Rocket,
     description: 'Share a project you\'re working on'
   },
-  { 
-    value: 'hackathon', 
-    label: 'Hackathon', 
+  {
+    value: 'hackathon',
+    label: 'Hackathon',
     icon: Trophy,
     description: 'Post about an upcoming hackathon'
   },
-  { 
-    value: 'internship', 
-    label: 'Internship', 
+  {
+    value: 'internship',
+    label: 'Internship',
     icon: Briefcase,
     description: 'Share an internship opportunity'
   },
@@ -36,7 +37,7 @@ const postTypes: { value: PostType; label: string; icon: React.ElementType; desc
 export default function CreatePost() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+
   const [type, setType] = useState<PostType>('project');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -58,15 +59,28 @@ export default function CreatePost() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success('Post created successfully!', {
-      description: 'Your post is now visible in the feed.',
-    });
-    
-    navigate('/feed');
+
+    try {
+      const response = await postsApi.create({
+        type,
+        title,
+        description,
+        tags,
+      });
+
+      if (response.success) {
+        toast.success('Post created successfully!', {
+          description: 'Your post is now visible in the feed.',
+        });
+        navigate('/feed');
+      } else {
+        toast.error(response.error || 'Failed to create post');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create post');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,8 +90,8 @@ export default function CreatePost() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => navigate(-1)}
             className="mb-6"
           >
@@ -93,29 +107,28 @@ export default function CreatePost() {
                   Share something with the MiniHub community
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent className="space-y-6">
                 {/* Post Type Selection */}
                 <div className="space-y-3">
                   <Label>Post Type</Label>
-                  <RadioGroup 
-                    value={type} 
+                  <RadioGroup
+                    value={type}
                     onValueChange={(val) => setType(val as PostType)}
                     className="grid grid-cols-3 gap-3"
                   >
                     {postTypes.map(postType => {
                       const Icon = postType.icon;
                       const isSelected = type === postType.value;
-                      
+
                       return (
-                        <Label 
+                        <Label
                           key={postType.value}
-                          htmlFor={postType.value} 
-                          className={`flex flex-col items-center gap-2 p-4 rounded-lg border cursor-pointer transition-all ${
-                            isSelected 
-                              ? 'border-primary bg-primary/5 shadow-glow' 
+                          htmlFor={postType.value}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-lg border cursor-pointer transition-all ${isSelected
+                              ? 'border-primary bg-primary/5 shadow-glow'
                               : 'border-border hover:border-muted-foreground/50'
-                          }`}
+                            }`}
                         >
                           <RadioGroupItem value={postType.value} id={postType.value} className="sr-only" />
                           <Icon className={`h-6 w-6 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -177,25 +190,25 @@ export default function CreatePost() {
                       }}
                       maxLength={20}
                     />
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={handleAddTag}
                       disabled={tags.length >= 5}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   {tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-3">
                       {tags.map(tag => (
-                        <span 
+                        <span
                           key={tag}
                           className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm"
                         >
                           #{tag}
-                          <button 
+                          <button
                             type="button"
                             onClick={() => handleRemoveTag(tag)}
                             className="ml-1 hover:text-destructive transition-colors"
@@ -213,15 +226,15 @@ export default function CreatePost() {
 
                 {/* Submit */}
                 <div className="flex gap-3 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => navigate(-1)}
                     className="flex-1"
                   >
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     type="submit"
                     className="flex-1 gradient-primary text-primary-foreground shadow-glow hover:opacity-90"
                     disabled={isSubmitting || !title || !description}

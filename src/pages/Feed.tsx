@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { mockPosts } from '@/data/mockData';
+import { postsApi } from '@/lib/api';
 import { PostCard } from '@/components/PostCard';
-import { PostType } from '@/types';
+import { Post, PostType } from '@/types';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Search, Rocket, Trophy, Briefcase, LayoutGrid } from 'lucide-react';
+import { Search, Rocket, Trophy, Briefcase, LayoutGrid, Loader2 } from 'lucide-react';
 
 type FilterType = 'all' | PostType;
 
@@ -19,22 +19,46 @@ const filters: { value: FilterType; label: string; icon: React.ElementType }[] =
 export default function Feed() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredPosts = mockPosts.filter(post => {
-    const matchesFilter = activeFilter === 'all' || post.type === activeFilter;
-    const matchesSearch = 
+  // Fetch posts from API
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await postsApi.getAll(activeFilter);
+        if (response.success) {
+          setPosts(response.data || []);
+        } else {
+          setError('Failed to load posts');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load posts');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPosts();
+  }, [activeFilter]);
+
+  // Filter posts by search query (client-side)
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch =
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    return matchesFilter && matchesSearch;
+
+    return matchesSearch;
   });
 
   return (
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         {/* Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
@@ -46,7 +70,7 @@ export default function Feed() {
         </motion.div>
 
         {/* Filters and Search */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
@@ -61,12 +85,12 @@ export default function Feed() {
               className="pl-10"
             />
           </div>
-          
+
           <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as FilterType)}>
             <TabsList className="h-10">
               {filters.map(filter => (
-                <TabsTrigger 
-                  key={filter.value} 
+                <TabsTrigger
+                  key={filter.value}
                   value={filter.value}
                   className="gap-2"
                 >
@@ -78,15 +102,40 @@ export default function Feed() {
           </Tabs>
         </motion.div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !isLoading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <Search className="h-8 w-8 text-destructive" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground mb-2">Error loading posts</h3>
+            <p className="text-muted-foreground">{error}</p>
+          </motion.div>
+        )}
+
         {/* Posts Grid */}
-        {filteredPosts.length > 0 ? (
+        {!isLoading && !error && filteredPosts.length > 0 && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredPosts.map((post, index) => (
               <PostCard key={post.id} post={post} index={index} />
             ))}
           </div>
-        ) : (
-          <motion.div 
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && filteredPosts.length === 0 && (
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center py-16"
@@ -96,7 +145,7 @@ export default function Feed() {
             </div>
             <h3 className="text-lg font-medium text-foreground mb-2">No posts found</h3>
             <p className="text-muted-foreground">
-              Try adjusting your search or filter criteria
+              {searchQuery ? 'Try adjusting your search' : 'Be the first to create a post!'}
             </p>
           </motion.div>
         )}

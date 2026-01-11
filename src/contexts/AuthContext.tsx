@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { User, AuthState } from '@/types';
-import { mockCredentials, mockUsers } from '@/data/mockData';
+import { authApi, setToken, getToken, removeToken } from '@/lib/api';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -14,70 +14,92 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
-    isLoading: false,
+    isLoading: true, // Start with loading to check for existing token
   });
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = getToken();
+      if (token) {
+        try {
+          const response = await authApi.getMe();
+          if (response.success && response.user) {
+            setAuthState({
+              user: response.user,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return;
+          }
+        } catch {
+          removeToken();
+        }
+      }
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+    };
+    checkAuth();
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    const credential = mockCredentials.find(
-      c => c.email === email && c.password === password
-    );
-    
-    if (credential) {
-      setAuthState({
-        user: credential.user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      return { success: true };
+
+    try {
+      const response = await authApi.login({ email, password });
+
+      if (response.success && response.token) {
+        setToken(response.token);
+        setAuthState({
+          user: response.user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return { success: true };
+      }
+
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return { success: false, error: response.error || 'Login failed' };
+    } catch (error) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return { success: false, error: error instanceof Error ? error.message : 'Login failed' };
     }
-    
-    setAuthState(prev => ({ ...prev, isLoading: false }));
-    return { success: false, error: 'Invalid email or password' };
   }, []);
 
   const register = useCallback(async (
-    name: string, 
-    email: string, 
-    password: string, 
+    name: string,
+    email: string,
+    password: string,
     role: 'student' | 'founder'
   ) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Check if email already exists
-    const exists = mockCredentials.some(c => c.email === email);
-    if (exists) {
+
+    try {
+      const response = await authApi.register({ name, email, password, role });
+
+      if (response.success && response.token) {
+        setToken(response.token);
+        setAuthState({
+          user: response.user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        return { success: true };
+      }
+
       setAuthState(prev => ({ ...prev, isLoading: false }));
-      return { success: false, error: 'Email already registered' };
+      return { success: false, error: response.error || 'Registration failed' };
+    } catch (error) {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
+      return { success: false, error: error instanceof Error ? error.message : 'Registration failed' };
     }
-    
-    // Create new user (in real app, this would be saved to backend)
-    const newUser: User = {
-      id: String(mockUsers.length + 1),
-      name,
-      email,
-      role,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name}`,
-      createdAt: new Date(),
-    };
-    
-    setAuthState({
-      user: newUser,
-      isAuthenticated: true,
-      isLoading: false,
-    });
-    
-    return { success: true };
   }, []);
 
   const logout = useCallback(() => {
+    removeToken();
     setAuthState({
       user: null,
       isAuthenticated: false,

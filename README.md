@@ -1,73 +1,124 @@
-# Welcome to your Lovable project
+# MiniHub - Student Collaboration Platform
 
-## Project info
+A full-stack platform for students to collaborate on projects, discover hackathons, and find internship opportunities.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## 🛠️ Tech Stack
 
-## How can I edit this code?
+### Frontend
+- **React 18** + Vite
+- **TypeScript**
+- **Tailwind CSS** + shadcn/ui
+- **Framer Motion** (animations)
+- **React Router** (routing)
+- **Axios** (API calls)
 
-There are several ways of editing your application.
+### Backend
+- **Node.js** + Express.js
+- **TypeScript**
+- **MongoDB Atlas** + Mongoose
+- **JWT** + bcrypt (auth)
+- **Helmet** (security headers)
+- **express-rate-limit** (rate limiting)
 
-**Use Lovable**
+## 🏗️ Architecture
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+```
+student-connect-hub/
+├── src/                    # Frontend (React)
+│   ├── components/
+│   ├── contexts/
+│   ├── lib/
+│   ├── pages/
+│   └── types/
+├── backend/                # Backend (Express)
+│   └── src/
+│       ├── config/
+│       ├── controllers/
+│       ├── middlewares/
+│       ├── models/
+│       ├── routes/
+│       └── utils/
+└── README.md
+```
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🚀 Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas account
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Environment Variables
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**Backend (`backend/.env`):**
+```bash
+PORT=5000
+NODE_ENV=development
+MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/minihub
+JWT_SECRET=your_secret_key
+FRONTEND_URL=http://localhost:5173
+```
 
-Follow these steps:
+**Frontend (`.env`):**
+```bash
+VITE_API_URL=http://localhost:5000/api/v1
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# Install frontend dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install backend dependencies
+cd backend && npm install
+```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Running Locally
+
+```bash
+# Terminal 1: Start backend
+cd backend && npm run dev
+
+# Terminal 2: Start frontend
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+- Health check: http://localhost:5000/api/v1/health
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📡 API Endpoints
 
-**Use GitHub Codespaces**
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/v1/auth/register` | Public | Create account |
+| POST | `/api/v1/auth/login` | Public | Login |
+| GET | `/api/v1/auth/me` | Protected | Get current user |
+| GET | `/api/v1/posts` | Public | List posts |
+| POST | `/api/v1/posts` | Protected | Create post |
+| DELETE | `/api/v1/posts/:id` | Admin | Delete post |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🔐 Security Features
 
-## What technologies are used for this project?
+- JWT authentication (24h expiration)
+- bcrypt password hashing
+- Rate limiting on auth routes
+- Helmet security headers
+- Input validation
+- CORS restrictions in production
+- Sanitized error messages
 
-This project is built with:
+## 👥 User Roles
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Student**: Browse, create posts
+- **Founder**: Same as student
+- **Admin**: Full access + moderation
 
-## How can I deploy this project?
+## 📦 Production URLs
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+- **Frontend**: [Your Vercel URL]
+- **Backend**: [Your Render/Railway URL]
 
-## Can I connect a custom domain to my Lovable project?
+## 📝 License
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+MIT
