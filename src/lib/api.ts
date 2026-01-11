@@ -120,6 +120,14 @@ export const postsApi = {
         const response = await api.delete(`/posts/${id}`);
         return response.data;
     },
+    like: async (id: string) => {
+        const response = await api.post(`/posts/${id}/like`);
+        return response.data;
+    },
+    addComment: async (id: string, text: string) => {
+        const response = await api.post(`/posts/${id}/comments`, { text });
+        return response.data;
+    },
 };
 
 export default api;

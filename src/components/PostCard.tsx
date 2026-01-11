@@ -1,15 +1,21 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Post } from '@/types';
+import { postsApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, Rocket, Trophy, Briefcase } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { Heart, MessageCircle, Rocket, Trophy, Briefcase, Send, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface PostCardProps {
-  post: Post;
+  post: Post & { likedBy?: string[] };
   index?: number;
+  onUpdate?: (postId: string, updates: { likes: number; liked: boolean }) => void;
 }
 
 const typeConfig = {
@@ -30,13 +36,86 @@ const typeConfig = {
   },
 };
 
-export function PostCard({ post, index = 0 }: PostCardProps) {
+export function PostCard({ post, index = 0, onUpdate }: PostCardProps) {
+  const { user, isAuthenticated } = useAuth();
   const config = typeConfig[post.type];
   const Icon = config.icon;
+
+  // Check if current user liked the post
+  const [isLiked, setIsLiked] = useState(() => {
+    if (user && post.likedBy) {
+      return post.likedBy.some((id: string) => id === user.id);
+    }
+    return false;
+  });
+  const [likesCount, setLikesCount] = useState(post.likes);
+  const [isLiking, setIsLiking] = useState(false);
+
+  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [isCommenting, setIsCommenting] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.comments);
 
   // Safely get author info
   const authorName = post.author?.name || 'Unknown';
   const authorAvatar = post.author?.avatar || '';
+
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to like posts');
+      return;
+    }
+
+    setIsLiking(true);
+    try {
+      const response = await postsApi.like(post.id);
+      if (response.success) {
+        setIsLiked(response.data.liked);
+        setLikesCount(response.data.likes);
+        if (onUpdate) {
+          onUpdate(post.id, { likes: response.data.likes, liked: response.data.liked });
+        }
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to like post');
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  const handleComment = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to comment');
+      return;
+    }
+
+    if (!commentText.trim()) {
+      return;
+    }
+
+    setIsCommenting(true);
+    try {
+      const response = await postsApi.addComment(post.id, commentText.trim());
+      if (response.success) {
+        setCommentsCount(prev => prev + 1);
+        setCommentText('');
+        setShowCommentInput(false);
+        toast.success('Comment added!');
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to add comment');
+    } finally {
+      setIsCommenting(false);
+    }
+  };
+
+  const handleCommentClick = () => {
+    if (!isAuthenticated) {
+      toast.error('Please log in to comment');
+      return;
+    }
+    setShowCommentInput(!showCommentInput);
+  };
 
   return (
     <motion.div
@@ -90,29 +169,74 @@ export function PostCard({ post, index = 0 }: PostCardProps) {
           )}
         </CardContent>
 
-        <CardFooter className="pt-3 border-t border-border/50 mt-auto">
+        <CardFooter className="pt-3 border-t border-border/50 mt-auto flex-col gap-3">
           <div className="flex items-center gap-2 w-full">
             <Button
               variant="ghost"
               size="sm"
-              className="gap-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10"
-              aria-label={`${post.likes} likes`}
-              title="Like this post"
+              className={`gap-1.5 transition-all ${isLiked
+                  ? 'text-red-500 hover:text-red-600 hover:bg-red-50'
+                  : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
+                }`}
+              aria-label={`${likesCount} likes`}
+              title={isLiked ? "Unlike this post" : "Like this post"}
+              onClick={handleLike}
+              disabled={isLiking}
             >
-              <Heart className="h-4 w-4" />
-              <span className="text-sm font-medium">{post.likes}</span>
+              {isLiking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+              )}
+              <span className="text-sm font-medium">{likesCount}</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               className="gap-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10"
-              aria-label={`${post.comments} comments`}
-              title="View comments"
+              aria-label={`${commentsCount} comments`}
+              title="Add a comment"
+              onClick={handleCommentClick}
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="text-sm font-medium">{post.comments}</span>
+              <span className="text-sm font-medium">{commentsCount}</span>
             </Button>
           </div>
+
+          {/* Comment Input */}
+          {showCommentInput && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="flex items-center gap-2 w-full"
+            >
+              <Input
+                placeholder="Write a comment..."
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleComment();
+                  }
+                }}
+                disabled={isCommenting}
+                className="flex-1 h-9"
+              />
+              <Button
+                size="sm"
+                onClick={handleComment}
+                disabled={isCommenting || !commentText.trim()}
+                className="h-9"
+              >
+                {isCommenting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </motion.div>
+          )}
         </CardFooter>
       </Card>
     </motion.div>

@@ -4,6 +4,8 @@ import {
     getPost,
     createPost,
     deletePost,
+    likePost,
+    addComment,
 } from '../controllers/postController';
 import { protect, adminOnly } from '../middlewares/auth';
 import { createPostValidation } from '../middlewares/validation';
@@ -17,5 +19,11 @@ router.route('/')
 router.route('/:id')
     .get(getPost)
     .delete(protect, adminOnly, deletePost);
+
+// Like/Unlike a post
+router.post('/:id/like', protect, likePost);
+
+// Add a comment
+router.post('/:id/comments', protect, addComment);
 
 export default router;

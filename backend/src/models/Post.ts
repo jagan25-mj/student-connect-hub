@@ -3,6 +3,13 @@ import { IUser } from './User';
 
 export type PostType = 'project' | 'hackathon' | 'internship';
 
+export interface IComment {
+    _id: mongoose.Types.ObjectId;
+    user: mongoose.Types.ObjectId | IUser;
+    text: string;
+    createdAt: Date;
+}
+
 export interface IPost extends Document {
     _id: mongoose.Types.ObjectId;
     type: PostType;
@@ -11,9 +18,28 @@ export interface IPost extends Document {
     tags: string[];
     author: mongoose.Types.ObjectId | IUser;
     likes: number;
-    comments: number;
+    likedBy: mongoose.Types.ObjectId[];
+    comments: IComment[];
     createdAt: Date;
 }
+
+const commentSchema = new Schema<IComment>(
+    {
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true,
+        },
+        text: {
+            type: String,
+            required: [true, 'Comment text is required'],
+            maxlength: [500, 'Comment cannot exceed 500 characters'],
+        },
+    },
+    {
+        timestamps: true,
+    }
+);
 
 const postSchema = new Schema<IPost>(
     {
@@ -52,10 +78,11 @@ const postSchema = new Schema<IPost>(
             type: Number,
             default: 0,
         },
-        comments: {
-            type: Number,
-            default: 0,
-        },
+        likedBy: [{
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+        }],
+        comments: [commentSchema],
     },
     {
         timestamps: true,
