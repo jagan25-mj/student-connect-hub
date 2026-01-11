@@ -13,6 +13,7 @@ import Register from "./pages/Register";
 import Feed from "./pages/Feed";
 import CreatePost from "./pages/CreatePost";
 import AdminDashboard from "./pages/AdminDashboard";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,28 +24,41 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner position="top-right" />
-        <BrowserRouter>
+        <BrowserRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/feed" element={<Feed />} />
-              <Route 
-                path="/create" 
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create"
                 element={
                   <ProtectedRoute>
                     <CreatePost />
                   </ProtectedRoute>
-                } 
+                }
               />
-              <Route 
-                path="/admin" 
+              <Route
+                path="/admin"
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <AdminDashboard />
                   </ProtectedRoute>
-                } 
+                }
               />
               <Route path="*" element={<NotFound />} />
             </Routes>
