@@ -41,6 +41,23 @@ student-connect-hub/
 └── README.md
 ```
 
+## ✅ Features
+
+### Core Features
+- ✅ User authentication (register/login)
+- ✅ Post creation (projects, hackathons, internships)
+- ✅ Like and comment on posts
+- ✅ Admin moderation dashboard
+- ✅ Responsive design
+
+### Recently Added
+- ✅ **Edit Profile** - Update name and bio
+- ✅ **Forgot/Reset Password** - Secure password recovery flow
+- ✅ **Edit/Delete Posts** - Authors and admins can modify posts
+- ✅ **Post Detail Page** - Full post view with all comments
+- ✅ **User Search** - Search for users by name or email
+- ✅ **Email Verification** - Token-based verification (logged to console)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -89,36 +106,51 @@ npm run dev
 
 ## 📡 API Endpoints
 
+### Authentication
 | Method | Endpoint | Access | Description |
 |--------|----------|--------|-------------|
 | POST | `/api/v1/auth/register` | Public | Create account |
 | POST | `/api/v1/auth/login` | Public | Login |
 | GET | `/api/v1/auth/me` | Protected | Get current user |
+| POST | `/api/v1/auth/forgot-password` | Public | Request password reset |
+| POST | `/api/v1/auth/reset-password/:token` | Public | Reset password |
+| GET | `/api/v1/auth/verify-email/:token` | Public | Verify email |
+
+### Users
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| PUT | `/api/v1/users/me` | Protected | Update profile |
+| GET | `/api/v1/users?search=` | Protected | Search users |
+
+### Posts
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
 | GET | `/api/v1/posts` | Public | List posts |
+| GET | `/api/v1/posts/:id` | Public | Get single post |
 | POST | `/api/v1/posts` | Protected | Create post |
-| DELETE | `/api/v1/posts/:id` | Admin | Delete post |
+| PUT | `/api/v1/posts/:id` | Protected | Update post (author/admin) |
+| DELETE | `/api/v1/posts/:id` | Protected | Delete post (author/admin) |
+| POST | `/api/v1/posts/:id/like` | Protected | Like/unlike post |
+| POST | `/api/v1/posts/:id/comments` | Protected | Add comment |
 
 ## 🔐 Security Features
 
 - JWT authentication (24h expiration)
 - bcrypt password hashing
+- Secure password reset tokens (1h expiry)
 - Rate limiting on auth routes
 - Helmet security headers
-- Input validation
+- Input validation with express-validator
 - CORS restrictions in production
 - Sanitized error messages
 
 ## 👥 User Roles
 
-- **Student**: Browse, create posts
+- **Student**: Browse, create, edit/delete own posts
 - **Founder**: Same as student
-- **Admin**: Full access + moderation
-
-## 📦 Production URLs
-
-- **Frontend**: [Your Vercel URL]
-- **Backend**: [Your Render/Railway URL]
+- **Admin**: Full access + moderation of all posts
 
 ## 📝 License
 
 MIT
+

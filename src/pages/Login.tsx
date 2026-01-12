@@ -13,19 +13,19 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  
+
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/feed';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     const result = await login(email, password);
-    
+
     if (result.success) {
       navigate(from, { replace: true });
     } else {
@@ -58,7 +58,7 @@ export default function Login() {
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive">
@@ -66,7 +66,7 @@ export default function Login() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -82,7 +82,7 @@ export default function Login() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -106,10 +106,10 @@ export default function Login() {
                 <p className="text-xs text-muted-foreground">admin@demo.com / demo123</p>
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex flex-col gap-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full gradient-primary text-primary-foreground shadow-glow hover:opacity-90"
                 disabled={isLoading}
               >
@@ -122,13 +122,18 @@ export default function Login() {
                   'Sign In'
                 )}
               </Button>
-              
-              <p className="text-sm text-muted-foreground text-center">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary hover:underline font-medium">
-                  Sign up
+
+              <div className="flex flex-col gap-2 text-center">
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  Forgot your password?
                 </Link>
-              </p>
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-primary hover:underline font-medium">
+                    Sign up
+                  </Link>
+                </p>
+              </div>
             </CardFooter>
           </form>
         </Card>

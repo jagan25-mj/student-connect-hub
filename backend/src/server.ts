@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import authRoutes from './routes/authRoutes';
 import postRoutes from './routes/postRoutes';
+import userRoutes from './routes/userRoutes';
 import errorHandler from './middlewares/errorHandler';
 
 // Load environment variables
@@ -73,6 +74,7 @@ app.get('/api/v1/health', (req, res) => {
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/posts', postRoutes);
+app.use('/api/v1/users', userRoutes);
 
 // Error handler middleware (must be after routes)
 app.use(errorHandler);

@@ -3,12 +3,13 @@ import {
     getPosts,
     getPost,
     createPost,
+    updatePost,
     deletePost,
     likePost,
     addComment,
 } from '../controllers/postController';
-import { protect, adminOnly } from '../middlewares/auth';
-import { createPostValidation } from '../middlewares/validation';
+import { protect } from '../middlewares/auth';
+import { createPostValidation, updatePostValidation } from '../middlewares/validation';
 
 const router = express.Router();
 
@@ -18,7 +19,8 @@ router.route('/')
 
 router.route('/:id')
     .get(getPost)
-    .delete(protect, adminOnly, deletePost);
+    .put(protect, updatePostValidation, updatePost)
+    .delete(protect, deletePost);
 
 // Like/Unlike a post
 router.post('/:id/like', protect, likePost);
@@ -27,3 +29,4 @@ router.post('/:id/like', protect, likePost);
 router.post('/:id/comments', protect, addComment);
 
 export default router;
+

@@ -83,3 +83,63 @@ export const createPostValidation = [
         .withMessage('Maximum 5 tags allowed'),
     handleValidationErrors,
 ];
+
+// Update post validation (all fields optional)
+export const updatePostValidation = [
+    body('type')
+        .optional()
+        .isIn(['project', 'hackathon', 'internship'])
+        .withMessage('Type must be project, hackathon, or internship'),
+    body('title')
+        .optional()
+        .trim()
+        .isLength({ max: 100 })
+        .withMessage('Title cannot exceed 100 characters'),
+    body('description')
+        .optional()
+        .trim()
+        .isLength({ max: 1000 })
+        .withMessage('Description cannot exceed 1000 characters'),
+    body('tags')
+        .optional()
+        .isArray({ max: 5 })
+        .withMessage('Maximum 5 tags allowed'),
+    handleValidationErrors,
+];
+
+// Profile update validation
+export const updateProfileValidation = [
+    body('name')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 50 })
+        .withMessage('Name must be between 1 and 50 characters'),
+    body('bio')
+        .optional()
+        .trim()
+        .isLength({ max: 200 })
+        .withMessage('Bio cannot exceed 200 characters'),
+    handleValidationErrors,
+];
+
+// Forgot password validation
+export const forgotPasswordValidation = [
+    body('email')
+        .trim()
+        .notEmpty()
+        .withMessage('Email is required')
+        .isEmail()
+        .withMessage('Please enter a valid email'),
+    handleValidationErrors,
+];
+
+// Reset password validation
+export const resetPasswordValidation = [
+    body('password')
+        .notEmpty()
+        .withMessage('Password is required')
+        .isLength({ min: 6 })
+        .withMessage('Password must be at least 6 characters'),
+    handleValidationErrors,
+];
+

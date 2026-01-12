@@ -100,6 +100,18 @@ export const authApi = {
         const response = await api.get('/auth/me');
         return response.data;
     },
+    forgotPassword: async (email: string) => {
+        const response = await api.post('/auth/forgot-password', { email });
+        return response.data;
+    },
+    resetPassword: async (token: string, password: string) => {
+        const response = await api.post(`/auth/reset-password/${token}`, { password });
+        return response.data;
+    },
+    verifyEmail: async (token: string) => {
+        const response = await api.get(`/auth/verify-email/${token}`);
+        return response.data;
+    },
 };
 
 export const postsApi = {
@@ -116,6 +128,10 @@ export const postsApi = {
         const response = await api.post('/posts', data);
         return response.data;
     },
+    update: async (id: string, data: { type?: string; title?: string; description?: string; tags?: string[] }) => {
+        const response = await api.put(`/posts/${id}`, data);
+        return response.data;
+    },
     delete: async (id: string) => {
         const response = await api.delete(`/posts/${id}`);
         return response.data;
@@ -130,4 +146,16 @@ export const postsApi = {
     },
 };
 
+export const usersApi = {
+    updateProfile: async (data: { name?: string; bio?: string }) => {
+        const response = await api.put('/users/me', data);
+        return response.data;
+    },
+    search: async (query: string) => {
+        const response = await api.get('/users', { params: { search: query } });
+        return response.data;
+    },
+};
+
 export default api;
+

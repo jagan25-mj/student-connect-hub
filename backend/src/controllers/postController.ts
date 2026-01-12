@@ -269,21 +269,110 @@ export const addComment = async (
     }
 };
 
-// @desc    Delete a post
-// @route   DELETE /api/v1/posts/:id
-// @access  Private (Admin only)
-export const deletePost = async (
+// @desc    Update a post
+// @route   PUT /api/v1/posts/:id
+// @access  Private (Author or Admin)
+export const updatePost = async (
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> => {
     try {
+        if (!req.user) {
+            res.status(401).json({
+                success: false,
+                error: 'Not authenticated',
+            });
+            return;
+        }
+
         const post = await Post.findById(req.params.id);
 
         if (!post) {
             res.status(404).json({
                 success: false,
                 error: 'Post not found',
+            });
+            return;
+        }
+
+        // Check ownership or admin
+        const isOwner = post.author._id.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isOwner && !isAdmin) {
+            res.status(403).json({
+                success: false,
+                error: 'Not authorized to update this post',
+            });
+            return;
+        }
+
+        const { type, title, description, tags } = req.body;
+
+        // Update only provided fields
+        if (type !== undefined) post.type = type;
+        if (title !== undefined) post.title = title;
+        if (description !== undefined) post.description = description;
+        if (tags !== undefined) post.tags = tags;
+
+        await post.save();
+
+        res.status(200).json({
+            success: true,
+            data: {
+                id: post._id,
+                type: post.type,
+                title: post.title,
+                description: post.description,
+                tags: post.tags,
+                author: post.author,
+                likes: post.likes,
+                likedBy: post.likedBy || [],
+                comments: post.commentCount || post.commentsList?.length || 0,
+                createdAt: post.createdAt,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Delete a post
+// @route   DELETE /api/v1/posts/:id
+// @access  Private (Author or Admin)
+export const deletePost = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                success: false,
+                error: 'Not authenticated',
+            });
+            return;
+        }
+
+        const post = await Post.findById(req.params.id);
+
+        if (!post) {
+            res.status(404).json({
+                success: false,
+                error: 'Post not found',
+            });
+            return;
+        }
+
+        // Check ownership or admin
+        const isOwner = post.author._id.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isOwner && !isAdmin) {
+            res.status(403).json({
+                success: false,
+                error: 'Not authorized to delete this post',
             });
             return;
         }
@@ -299,3 +388,4 @@ export const deletePost = async (
         next(error);
     }
 };
+

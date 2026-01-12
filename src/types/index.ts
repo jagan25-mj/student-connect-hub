@@ -8,6 +8,19 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  bio?: string;
+  isEmailVerified?: boolean;
+  createdAt: Date;
+}
+
+export interface Comment {
+  _id: string;
+  user: {
+    _id: string;
+    name: string;
+    avatar?: string;
+  };
+  text: string;
   createdAt: Date;
 }
 
@@ -21,6 +34,8 @@ export interface Post {
   tags?: string[];
   likes: number;
   comments: number;
+  likedBy?: string[];
+  commentsList?: Comment[];
 }
 
 export interface AuthState {
@@ -28,3 +43,4 @@ export interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
 }
+

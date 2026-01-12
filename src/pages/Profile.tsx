@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -5,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
+import { EditProfileDialog } from '@/components/EditProfileDialog';
 import {
     Mail,
     Calendar,
@@ -13,7 +14,7 @@ import {
     LogOut,
     Settings,
     Edit,
-    Construction
+    User as UserIcon
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -21,24 +22,11 @@ import { useNavigate } from 'react-router-dom';
 export default function Profile() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     const handleLogout = () => {
         logout();
         navigate('/');
-    };
-
-    const handleEditProfile = () => {
-        toast.info('Edit Profile', {
-            description: 'Profile editing feature coming soon!',
-            icon: <Construction className="h-4 w-4" />,
-        });
-    };
-
-    const handleAccountSettings = () => {
-        toast.info('Account Settings', {
-            description: 'Account settings feature coming soon!',
-            icon: <Construction className="h-4 w-4" />,
-        });
     };
 
     if (!user) {
@@ -90,7 +78,7 @@ export default function Profile() {
                                     size="sm"
                                     className="gap-2"
                                     aria-label="Edit profile"
-                                    onClick={handleEditProfile}
+                                    onClick={() => setIsEditDialogOpen(true)}
                                 >
                                     <Edit className="h-4 w-4" />
                                     Edit Profile
@@ -110,6 +98,14 @@ export default function Profile() {
                                         </Badge>
                                     </div>
                                 </div>
+
+                                {/* Bio */}
+                                {user.bio && (
+                                    <div className="flex items-start gap-3 text-muted-foreground">
+                                        <UserIcon className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                        <p className="text-sm">{user.bio}</p>
+                                    </div>
+                                )}
 
                                 <Separator />
 
@@ -138,11 +134,11 @@ export default function Profile() {
                             <Button
                                 variant="outline"
                                 className="w-full justify-start gap-3"
-                                aria-label="Account settings"
-                                onClick={handleAccountSettings}
+                                aria-label="Edit profile"
+                                onClick={() => setIsEditDialogOpen(true)}
                             >
                                 <Settings className="h-4 w-4" />
-                                Account Settings
+                                Edit Profile
                             </Button>
 
                             {user.role === 'admin' && (
@@ -170,6 +166,13 @@ export default function Profile() {
                     </Card>
                 </motion.div>
             </div>
+
+            {/* Edit Profile Dialog */}
+            <EditProfileDialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+            />
         </div>
     );
 }
+
