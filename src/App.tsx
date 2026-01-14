@@ -7,17 +7,17 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Layout } from "@/components/layout/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Feed from "./pages/Feed";
-import CreatePost from "./pages/CreatePost";
-import AdminDashboard from "./pages/AdminDashboard";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import PostDetail from "./pages/PostDetail";
+import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Feed from "@/pages/Feed";
+import CreatePost from "@/pages/CreatePost";
+import AdminDashboard from "@/pages/AdminDashboard";
+import Profile from "@/pages/Profile";
+import NotFound from "@/pages/NotFound";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
+import PostDetail from "@/pages/PostDetail";
 
 const queryClient = new QueryClient();
 

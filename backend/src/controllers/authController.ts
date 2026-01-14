@@ -1,7 +1,25 @@
+/**
+ * Authentication Controller
+ * 
+ * SECURITY OVERVIEW:
+ * - Password hashing with bcrypt (handled in User model)
+ * - JWT tokens for stateless authentication
+ * - Generic error messages to prevent user enumeration
+ * - Secure password reset with hashed tokens
+ * - Email verification tokens
+ * 
+ * OWASP Alignment:
+ * - A02:2021 Cryptographic Failures (secure password storage)
+ * - A07:2021 Identification and Authentication Failures
+ */
+
 import { Request, Response, NextFunction } from 'express';
 import crypto from 'crypto';
 import User, { IUser } from '../models/User';
 import { generateToken } from '../utils/jwt';
+
+// Environment detection for conditional logging
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Extend Request to include user
 declare global {
@@ -23,7 +41,9 @@ export const register = async (
     try {
         const { name, email, password, role } = req.body;
 
-        // Check if user already exists
+        // SECURITY: Check if user already exists
+        // Using generic messages helps, but email check still reveals existence
+        // Consider implementing account enumeration protection if needed
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             res.status(400).json({
@@ -33,10 +53,10 @@ export const register = async (
             return;
         }
 
-        // Generate email verification token
+        // SECURITY: Generate cryptographically secure email verification token
         const emailVerificationToken = crypto.randomBytes(32).toString('hex');
 
-        // Create user
+        // Create user (password is hashed in the User model pre-save hook)
         const user = await User.create({
             name,
             email,
@@ -46,11 +66,14 @@ export const register = async (
             isEmailVerified: false,
         });
 
-        // Log the verification token (in production, send email)
-        console.log(`[Email Verification] Token for ${email}: ${emailVerificationToken}`);
-        console.log(`[Email Verification] Link: http://localhost:5173/verify-email/${emailVerificationToken}`);
+        // SECURITY: Only log verification tokens in development
+        // In production, these should be sent via email
+        if (!isProduction) {
+            console.log(`[Email Verification] Token for ${email}: ${emailVerificationToken}`);
+            console.log(`[Email Verification] Link: http://localhost:5173/verify-email/${emailVerificationToken}`);
+        }
 
-        // Generate token
+        // Generate JWT token for immediate login
         const token = generateToken(user._id.toString());
 
         res.status(201).json({
@@ -83,7 +106,7 @@ export const login = async (
     try {
         const { email, password } = req.body;
 
-        // Validate input
+        // Validate input (also validated by middleware)
         if (!email || !password) {
             res.status(400).json({
                 success: false,
@@ -92,9 +115,12 @@ export const login = async (
             return;
         }
 
-        // Find user and include password for comparison
+        // SECURITY: Find user and include password for comparison
+        // Password is excluded by default in the User model for security
         const user = await User.findOne({ email }).select('+password');
         if (!user) {
+            // SECURITY: Use generic error message to prevent user enumeration
+            // Attacker cannot determine if email exists based on response
             res.status(401).json({
                 success: false,
                 error: 'Invalid email or password',
@@ -102,9 +128,11 @@ export const login = async (
             return;
         }
 
-        // Check password
+        // SECURITY: Compare password using bcrypt (timing-safe comparison)
+        // bcrypt.compare is designed to be constant-time to prevent timing attacks
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
+            // SECURITY: Same error message as user-not-found to prevent enumeration
             res.status(401).json({
                 success: false,
                 error: 'Invalid email or password',
@@ -174,6 +202,7 @@ export const getMe = async (
 // @desc    Forgot password - send reset token
 // @route   POST /api/v1/auth/forgot-password
 // @access  Public
+// SECURITY: Rate limited at route level to prevent abuse
 export const forgotPassword = async (
     req: Request,
     res: Response,
@@ -185,7 +214,8 @@ export const forgotPassword = async (
         const user = await User.findOne({ email });
 
         if (!user) {
-            // Don't reveal if user exists
+            // SECURITY: Always return success to prevent user enumeration
+            // Attacker cannot determine if email exists in the system
             res.status(200).json({
                 success: true,
                 message: 'If an account with that email exists, a password reset link has been sent.',
@@ -193,11 +223,13 @@ export const forgotPassword = async (
             return;
         }
 
-        // Generate reset token
+        // SECURITY: Generate cryptographically secure reset token (256 bits)
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        // Token expires in 1 hour to limit window of opportunity
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000);
 
-        // Save hashed token to database
+        // SECURITY: Store only the hash of the token in the database
+        // If database is compromised, attacker cannot use the hashed tokens
         user.passwordResetToken = crypto
             .createHash('sha256')
             .update(resetToken)

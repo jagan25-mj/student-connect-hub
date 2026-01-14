@@ -203,7 +203,7 @@ export function PostCard({ post, index = 0, onUpdate, onDelete }: PostCardProps)
                 {canModify && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Post options">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -301,6 +301,7 @@ export function PostCard({ post, index = 0, onUpdate, onDelete }: PostCardProps)
               >
                 <Input
                   placeholder="Write a comment..."
+                  aria-label="Write a comment"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => {
@@ -317,6 +318,7 @@ export function PostCard({ post, index = 0, onUpdate, onDelete }: PostCardProps)
                   onClick={handleComment}
                   disabled={isCommenting || !commentText.trim()}
                   className="h-9"
+                  aria-label="Submit comment"
                 >
                   {isCommenting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

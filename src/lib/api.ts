@@ -3,6 +3,11 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 // API base URL - use environment variable in production
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
+// Log the API URL in development for debugging
+if (import.meta.env.DEV) {
+    console.log('🔗 API Base URL:', API_BASE_URL);
+}
+
 // Create axios instance
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -37,6 +42,10 @@ api.interceptors.request.use(
         if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        // Log requests in development
+        if (import.meta.env.DEV) {
+            console.log(`📤 ${config.method?.toUpperCase()} ${config.url}`);
+        }
         return config;
     },
     (error) => Promise.reject(error)
@@ -44,8 +53,24 @@ api.interceptors.request.use(
 
 // Response interceptor - handle errors
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        // Log successful responses in development
+        if (import.meta.env.DEV) {
+            console.log(`✅ ${response.status} ${response.config.url}`);
+        }
+        return response;
+    },
     (error: AxiosError<{ error?: string; message?: string }>) => {
+        // Log errors in development for debugging
+        if (import.meta.env.DEV) {
+            console.error('❌ API Error:', {
+                url: error.config?.url,
+                status: error.response?.status,
+                message: error.message,
+                code: error.code,
+            });
+        }
+
         const status = error.response?.status;
         const message = error.response?.data?.error || error.response?.data?.message;
 
@@ -72,9 +97,12 @@ api.interceptors.response.use(
             return Promise.reject(new Error(message || 'Invalid request'));
         }
 
-        // Handle network errors
+        // Handle network errors (ERR_CONNECTION_REFUSED, etc.)
         if (!error.response) {
-            return Promise.reject(new Error('Network error. Please check your connection.'));
+            const networkErrorMessage = error.code === 'ERR_NETWORK'
+                ? 'Cannot connect to server. Please ensure the backend is running on ' + API_BASE_URL
+                : 'Network error. Please check your connection.';
+            return Promise.reject(new Error(networkErrorMessage));
         }
 
         // Handle server errors

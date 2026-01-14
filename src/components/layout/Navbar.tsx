@@ -2,12 +2,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger 
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Rocket, Menu, X, LogOut, User, Shield, PlusCircle } from 'lucide-react';
@@ -29,7 +29,7 @@ export function Navbar() {
   ];
 
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       className="sticky top-0 z-50 glass border-b border-border/50"
@@ -47,28 +47,28 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map(link => (
-              <Link 
-                key={link.to} 
+              <Link
+                key={link.to}
                 to={link.to}
                 className="text-muted-foreground hover:text-foreground transition-colors font-medium"
               >
                 {link.label}
               </Link>
             ))}
-            
+
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
-                <Button 
+                <Button
                   onClick={() => navigate('/create')}
                   className="gradient-primary text-primary-foreground shadow-glow hover:opacity-90 transition-opacity"
                 >
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Create Post
                 </Button>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-2 p-1 rounded-full hover:bg-secondary transition-colors">
+                    <button aria-label="Open user menu" className="flex items-center gap-2 p-1 rounded-full hover:bg-secondary transition-colors">
                       <Avatar className="h-8 w-8 border-2 border-primary/30">
                         <AvatarImage src={user?.avatar} alt={user?.name} />
                         <AvatarFallback className="bg-primary text-primary-foreground">
@@ -109,7 +109,7 @@ export function Navbar() {
                 <Button variant="ghost" onClick={() => navigate('/login')}>
                   Log in
                 </Button>
-                <Button 
+                <Button
                   onClick={() => navigate('/register')}
                   className="gradient-primary text-primary-foreground shadow-glow hover:opacity-90"
                 >
@@ -120,7 +120,9 @@ export function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
             className="md:hidden p-2 rounded-lg hover:bg-secondary transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -130,7 +132,7 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -138,8 +140,8 @@ export function Navbar() {
           >
             <div className="flex flex-col gap-2">
               {navLinks.map(link => (
-                <Link 
-                  key={link.to} 
+                <Link
+                  key={link.to}
                   to={link.to}
                   onClick={() => setMobileMenuOpen(false)}
                   className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
@@ -147,26 +149,26 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
-              
+
               {isAuthenticated ? (
                 <>
-                  <Link 
-                    to="/create" 
+                  <Link
+                    to="/create"
                     onClick={() => setMobileMenuOpen(false)}
                     className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                   >
                     Create Post
                   </Link>
                   {user?.role === 'admin' && (
-                    <Link 
-                      to="/admin" 
+                    <Link
+                      to="/admin"
                       onClick={() => setMobileMenuOpen(false)}
                       className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                     >
                       Admin Dashboard
                     </Link>
                   )}
-                  <button 
+                  <button
                     onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
                     className="px-4 py-2 rounded-lg text-left text-destructive hover:bg-destructive/10 transition-colors"
                   >
@@ -175,15 +177,15 @@ export function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                   >
                     Log in
                   </Link>
-                  <Link 
-                    to="/register" 
+                  <Link
+                    to="/register"
                     onClick={() => setMobileMenuOpen(false)}
                     className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-center"
                   >

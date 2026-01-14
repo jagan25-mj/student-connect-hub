@@ -16,21 +16,21 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'student' | 'founder'>('student');
   const [error, setError] = useState('');
-  
+
   const { register, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
-    
+
     const result = await register(name, email, password, role);
-    
+
     if (result.success) {
       navigate('/feed');
     } else {
@@ -46,7 +46,7 @@ export default function Register() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+          <Link to="/" aria-label="Go to MiniHub home page" className="inline-flex items-center gap-2 mb-6">
             <div className="p-2.5 rounded-xl gradient-primary shadow-glow">
               <Rocket className="h-6 w-6 text-primary-foreground" />
             </div>
@@ -63,7 +63,7 @@ export default function Register() {
                 Fill in your details to get started
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {error && (
                 <Alert variant="destructive">
@@ -71,7 +71,7 @@ export default function Register() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
@@ -87,7 +87,7 @@ export default function Register() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
@@ -103,7 +103,7 @@ export default function Register() {
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
@@ -124,18 +124,17 @@ export default function Register() {
 
               <div className="space-y-3">
                 <Label>I am a...</Label>
-                <RadioGroup 
-                  value={role} 
+                <RadioGroup
+                  value={role}
                   onValueChange={(val) => setRole(val as 'student' | 'founder')}
                   className="grid grid-cols-2 gap-3"
                 >
-                  <Label 
-                    htmlFor="student" 
-                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                      role === 'student' 
-                        ? 'border-primary bg-primary/5 shadow-glow' 
+                  <Label
+                    htmlFor="student"
+                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${role === 'student'
+                        ? 'border-primary bg-primary/5 shadow-glow'
                         : 'border-border hover:border-muted-foreground/50'
-                    }`}
+                      }`}
                   >
                     <RadioGroupItem value="student" id="student" className="sr-only" />
                     <GraduationCap className={`h-5 w-5 ${role === 'student' ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -143,13 +142,12 @@ export default function Register() {
                       Student
                     </span>
                   </Label>
-                  <Label 
-                    htmlFor="founder" 
-                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${
-                      role === 'founder' 
-                        ? 'border-primary bg-primary/5 shadow-glow' 
+                  <Label
+                    htmlFor="founder"
+                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${role === 'founder'
+                        ? 'border-primary bg-primary/5 shadow-glow'
                         : 'border-border hover:border-muted-foreground/50'
-                    }`}
+                      }`}
                   >
                     <RadioGroupItem value="founder" id="founder" className="sr-only" />
                     <Building2 className={`h-5 w-5 ${role === 'founder' ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -160,10 +158,10 @@ export default function Register() {
                 </RadioGroup>
               </div>
             </CardContent>
-            
+
             <CardFooter className="flex flex-col gap-4">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full gradient-primary text-primary-foreground shadow-glow hover:opacity-90"
                 disabled={isLoading}
               >
@@ -176,7 +174,7 @@ export default function Register() {
                   'Create Account'
                 )}
               </Button>
-              
+
               <p className="text-sm text-muted-foreground text-center">
                 Already have an account?{' '}
                 <Link to="/login" className="text-primary hover:underline font-medium">

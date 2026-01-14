@@ -41,7 +41,7 @@ export default function Login() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+          <Link to="/" aria-label="Go to MiniHub home page" className="inline-flex items-center gap-2 mb-6">
             <div className="p-2.5 rounded-xl gradient-primary shadow-glow">
               <Rocket className="h-6 w-6 text-primary-foreground" />
             </div>
