@@ -123,9 +123,11 @@ const PORT = process.env.PORT || 5000;
 // This ensures the server is reachable even if DB connection is slow
 const startServer = async (): Promise<void> => {
     // Start listening IMMEDIATELY so frontend can reach the server
-    const server = app.listen(PORT, () => {
+    // Bind to 0.0.0.0 to ensure accessibility across network interfaces
+    const server = app.listen(Number(PORT), '0.0.0.0', () => {
         console.log(`\n========================================`);
         console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`📡 Accessible at: http://localhost:${PORT}`);
         console.log(`📍 Environment: ${isProduction ? 'production' : 'development'}`);
         console.log(`🔗 Health check: http://localhost:${PORT}/api/v1/health`);
         console.log(`========================================\n`);

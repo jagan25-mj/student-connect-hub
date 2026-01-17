@@ -99,9 +99,13 @@ api.interceptors.response.use(
 
         // Handle network errors (ERR_CONNECTION_REFUSED, etc.)
         if (!error.response) {
-            const networkErrorMessage = error.code === 'ERR_NETWORK'
-                ? 'Cannot connect to server. Please ensure the backend is running on ' + API_BASE_URL
-                : 'Network error. Please check your connection.';
+            let networkErrorMessage = 'Network error. Please check your connection.';
+
+            if (error.code === 'ERR_NETWORK' || error.message.includes('Network Error')) {
+                networkErrorMessage = `Unable to connect to server at ${API_BASE_URL}. \n\nPossible causes:\n1. Backend server is not running\n2. Database connection failed preventing server startup\n3. CORS blocking the request`;
+            }
+
+            console.error('🚨 Network Error Details:', error);
             return Promise.reject(new Error(networkErrorMessage));
         }
 
