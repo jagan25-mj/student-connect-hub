@@ -4,7 +4,7 @@ import { authApi, setToken, getToken, removeToken } from '@/lib/api';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  register: (name: string, email: string, password: string, role: 'student' | 'founder') => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, email: string, password: string, role?: 'student') => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateUser: (user: User) => void;
   refreshUser: () => Promise<void>;
@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     name: string,
     email: string,
     password: string,
-    role: 'student' | 'founder'
+    role: 'student' = 'student'
   ) => {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 

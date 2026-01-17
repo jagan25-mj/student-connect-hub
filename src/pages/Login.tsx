@@ -99,12 +99,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Demo credentials hint */}
-              <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                <p className="text-xs text-muted-foreground font-medium mb-1">Demo Credentials:</p>
-                <p className="text-xs text-muted-foreground">student@demo.com / demo123</p>
-                <p className="text-xs text-muted-foreground">admin@demo.com / demo123</p>
-              </div>
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4">

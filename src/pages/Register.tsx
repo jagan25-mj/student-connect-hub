@@ -7,14 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Rocket, Mail, Lock, User, AlertCircle, Loader2, GraduationCap, Building2 } from 'lucide-react';
+import { Rocket, Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'student' | 'founder'>('student');
   const [error, setError] = useState('');
 
   const { register, isLoading } = useAuth();
@@ -29,7 +27,8 @@ export default function Register() {
       return;
     }
 
-    const result = await register(name, email, password, role);
+    // All registrations default to 'student' role
+    const result = await register(name, email, password, 'student');
 
     if (result.success) {
       navigate('/feed');
@@ -51,16 +50,16 @@ export default function Register() {
               <Rocket className="h-6 w-6 text-primary-foreground" />
             </div>
           </Link>
-          <h1 className="text-2xl font-bold text-foreground">Create an account</h1>
-          <p className="text-muted-foreground mt-2">Join the MiniHub community today</p>
+          <h1 className="text-2xl font-bold text-foreground">Join MiniHub</h1>
+          <p className="text-muted-foreground mt-2">Connect with fellow students, share projects, and discover opportunities</p>
         </div>
 
         <Card className="gradient-card border-border/50 shadow-lg">
           <form onSubmit={handleSubmit}>
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg">Sign Up</CardTitle>
+              <CardTitle className="text-lg">Create Your Account</CardTitle>
               <CardDescription>
-                Fill in your details to get started
+                Join thousands of students sharing hackathons, internships, and projects
               </CardDescription>
             </CardHeader>
 
@@ -79,11 +78,13 @@ export default function Register() {
                   <Input
                     id="name"
                     type="text"
-                    placeholder="John Doe"
+                    placeholder="Your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="pl-10"
                     required
+                    minLength={2}
+                    maxLength={50}
                   />
                 </div>
               </div>
@@ -121,42 +122,6 @@ export default function Register() {
                 </div>
                 <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
               </div>
-
-              <div className="space-y-3">
-                <Label>I am a...</Label>
-                <RadioGroup
-                  value={role}
-                  onValueChange={(val) => setRole(val as 'student' | 'founder')}
-                  className="grid grid-cols-2 gap-3"
-                >
-                  <Label
-                    htmlFor="student"
-                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${role === 'student'
-                        ? 'border-primary bg-primary/5 shadow-glow'
-                        : 'border-border hover:border-muted-foreground/50'
-                      }`}
-                  >
-                    <RadioGroupItem value="student" id="student" className="sr-only" />
-                    <GraduationCap className={`h-5 w-5 ${role === 'student' ? 'text-primary' : 'text-muted-foreground'}`} />
-                    <span className={role === 'student' ? 'text-foreground font-medium' : 'text-muted-foreground'}>
-                      Student
-                    </span>
-                  </Label>
-                  <Label
-                    htmlFor="founder"
-                    className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all ${role === 'founder'
-                        ? 'border-primary bg-primary/5 shadow-glow'
-                        : 'border-border hover:border-muted-foreground/50'
-                      }`}
-                  >
-                    <RadioGroupItem value="founder" id="founder" className="sr-only" />
-                    <Building2 className={`h-5 w-5 ${role === 'founder' ? 'text-primary' : 'text-muted-foreground'}`} />
-                    <span className={role === 'founder' ? 'text-foreground font-medium' : 'text-muted-foreground'}>
-                      Founder
-                    </span>
-                  </Label>
-                </RadioGroup>
-              </div>
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4">
@@ -188,3 +153,4 @@ export default function Register() {
     </div>
   );
 }
+

@@ -57,11 +57,13 @@ export const register = async (
         const emailVerificationToken = crypto.randomBytes(32).toString('hex');
 
         // Create user (password is hashed in the User model pre-save hook)
+        // SECURITY: Force role to 'student' - ignore any role from request body
+        // Admin accounts must be created via database seeding or admin panel
         const user = await User.create({
             name,
             email,
             password,
-            role: role || 'student',
+            role: 'student', // Always student - admin cannot be self-assigned
             emailVerificationToken,
             isEmailVerified: false,
         });

@@ -124,20 +124,21 @@ const sanitizeHtml = (value: string): string => {
 
 /**
  * SECURITY: Registration validation with:
- * - Name: Required, trimmed, max 50 chars, HTML sanitized
+ * - Name: Required, trimmed, 2-50 chars, HTML sanitized
  * - Email: Required, valid format, normalized
  * - Password: Required, min 6 chars (consider adding complexity requirements)
- * - Role: Optional, must be from allowed list
+ * - Role: Ignored - always defaults to 'student' (admin cannot be self-assigned)
  */
 export const registerValidation = [
     // SECURITY: Reject unexpected fields to prevent mass assignment
+    // Note: 'role' is allowed in body but will be ignored/overwritten to 'student'
     rejectUnknownFields(['name', 'email', 'password', 'role']),
     body('name')
         .trim()
         .notEmpty()
         .withMessage('Name is required')
-        .isLength({ max: 50 })
-        .withMessage('Name cannot exceed 50 characters')
+        .isLength({ min: 2, max: 50 })
+        .withMessage('Name must be between 2 and 50 characters')
         .customSanitizer(sanitizeHtml),
     body('email')
         .trim()
@@ -153,14 +154,9 @@ export const registerValidation = [
         .withMessage('Password is required')
         .isLength({ min: 6, max: 128 })
         .withMessage('Password must be between 6 and 128 characters'),
-    // SECURITY: Consider adding password complexity requirements:
-    // .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    // .withMessage('Password must contain uppercase, lowercase, and number'),
-    body('role')
-        .optional()
-        .isIn(['student', 'founder'])
-        // SECURITY: 'admin' role cannot be self-assigned during registration
-        .withMessage('Role must be student or founder'),
+    // SECURITY: Force role to 'student' - ignore any role in request body
+    // This is handled in the controller, but we don't validate role here
+    // to avoid confusing error messages
     handleValidationErrors,
 ];
 

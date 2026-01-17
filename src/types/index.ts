@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'founder' | 'admin';
+export type UserRole = 'student' | 'admin';
 
 export type PostType = 'project' | 'hackathon' | 'internship';
 
